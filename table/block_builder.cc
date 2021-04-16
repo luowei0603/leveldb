@@ -99,7 +99,7 @@ void BlockBuilder::Add(const Slice& key, const Slice& value) {
 
   // Update state
   last_key_.resize(shared);
-  last_key_.append(key.data() + shared, non_shared);
+  last_key_.append(key.data() + shared, non_shared); // last_key_是一个完整的key,其实这两行代码就相当于last_key_ = key.Tostring()
   assert(Slice(last_key_) == key);
   counter_++;
 }

@@ -33,15 +33,17 @@ class BytewiseComparatorImpl : public Comparator {
     // Find length of common prefix
     size_t min_length = std::min(start->size(), limit.size());
     size_t diff_index = 0;
+    // 计算共同前缀字符串的长度
     while ((diff_index < min_length) &&
            ((*start)[diff_index] == limit[diff_index])) {
       diff_index++;
     }
 
+    // 说明start是limit的前缀，或者反之
     if (diff_index >= min_length) {
       // Do not shorten if one string is a prefix of the other
     } else {
-      uint8_t diff_byte = static_cast<uint8_t>((*start)[diff_index]);
+      uint8_t diff_byte = static_cast<uint8_t>((*start)[diff_index]);  // 首个不同的字符
       if (diff_byte < static_cast<uint8_t>(0xff) &&
           diff_byte + 1 < static_cast<uint8_t>(limit[diff_index])) {
         (*start)[diff_index]++;

@@ -32,14 +32,14 @@ Reader::~Reader() { delete[] backing_store_; }
 
 bool Reader::SkipToInitialBlock() {
   const size_t offset_in_block = initial_offset_ % kBlockSize;
-  uint64_t block_start_location = initial_offset_ - offset_in_block;
+  uint64_t block_start_location = initial_offset_ - offset_in_block;  // 要读取的offset所在的block的首地址
 
   // Don't search a block if we'd be in the trailer
-  if (offset_in_block > kBlockSize - 6) {
+  if (offset_in_block > kBlockSize - 6) {   // 如果偏移在block的最后6byte里，肯定不是一条完整的记录，跳到下一个block
     block_start_location += kBlockSize;
   }
 
-  end_of_buffer_offset_ = block_start_location;
+  end_of_buffer_offset_ = block_start_location;  
 
   // Skip to start of first block that can contain the initial record
   if (block_start_location > 0) {
@@ -54,7 +54,7 @@ bool Reader::SkipToInitialBlock() {
 }
 
 bool Reader::ReadRecord(Slice* record, std::string* scratch) {
-  if (last_record_offset_ < initial_offset_) {
+  if (last_record_offset_ < initial_offset_) {  // 上一次返回的偏移 < 指定读位置的偏移，需要查找block
     if (!SkipToInitialBlock()) {
       return false;
     }
@@ -189,17 +189,17 @@ void Reader::ReportDrop(uint64_t bytes, const Status& reason) {
 unsigned int Reader::ReadPhysicalRecord(Slice* result) {
   while (true) {
     if (buffer_.size() < kHeaderSize) {
-      if (!eof_) {
+      if (!eof_) {  // 上次读没有读到文件末尾
         // Last read was a full read, so this is a trailer to skip
         buffer_.clear();
         Status status = file_->Read(kBlockSize, &buffer_, backing_store_);
         end_of_buffer_offset_ += buffer_.size();
-        if (!status.ok()) {
+        if (!status.ok()) {  // 读取失败，设置eof_为true，报告错误并返回kEof
           buffer_.clear();
           ReportDrop(kBlockSize, status);
           eof_ = true;
           return kEof;
-        } else if (buffer_.size() < kBlockSize) {
+        } else if (buffer_.size() < kBlockSize) {  // 实际读取的字节 < 7,表明到了文件结尾
           eof_ = true;
         }
         continue;
